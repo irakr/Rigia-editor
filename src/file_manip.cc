@@ -24,3 +24,13 @@
  * 
  * For more information, please refer to <http://unlicense.org>
  */
+ 
+/*
+ * file_manip.cc
+ */
+ 
+#include "file_manip.h"
+#include <string.h>
+
+
+

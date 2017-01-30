@@ -24,3 +24,35 @@
  * 
  * For more information, please refer to <http://unlicense.org>
  */
+ 
+/*
+ * io.h
+ *
+ * This module is used for handling input-output mechanism.
+ * This module is intended to use the input/output system calls efficiently.
+ *
+ */
+ 
+#ifndef RIG_IO_H_
+#define RIG_IO_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+// This class handles all incoming characters entered by the user in the editor environment.
+class InputHandler {
+public:
+	InputHandler();
+	
+};
+
+// This class handles how characters will be displayed on the terminal and their behaviour.
+class OutputHandler {
+public:
+	OutputHandler();
+	
+};
+
+#endif

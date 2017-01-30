@@ -24,3 +24,27 @@
  * 
  * For more information, please refer to <http://unlicense.org>
  */
+
+/*
+ * Exceptions.h
+ *
+ * Exception handling classes are defined in this module.
+ */
+
+#ifndef RIG_EXCEPTIONS_H_
+#define RIG_EXCEPTIONS_H_
+
+#define EXC_MESSAGE_LEN 256
+
+#include <exception>
+
+// Memory related exceptions
+class MemoryException {
+public:
+	MemoryException() : message("") { }
+	MemoryException(char *message);
+private:
+	char message[EXC_MESSAGE_LEN];
+};
+
+#endif

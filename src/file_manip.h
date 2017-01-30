@@ -24,3 +24,32 @@
  * 
  * For more information, please refer to <http://unlicense.org>
  */
+ 
+/*
+ * file_manip.h
+ *
+ * This module is used for managing file operations like - 
+ * - Opening a new file for writing to.
+ * - Save during runtime according to user's command.
+ * - so on....
+ */
+ 
+#ifndef RIG_FILE_MANIP_H_
+#define RIG_FILE_MANIP_H_
+
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+// This class is used for providing file management functionalities.
+class FileManipUnit {
+public:
+	FileManipUnit() : write_fd_(STDOUT_FILENO), read_fd_(STDIN_FILENO), write_filename_("stdout"), read_filename_("stdin") { }
+	//FileManipUnit(int fd, char *name);
+private:
+	int write_fd_;	//Descriptor of the file that is currently being edited
+	int read_fd_;	//Descriptor of the file from which the editor is reading characters
+	char *write_filename_, *read_filename_;
+};
+
+#endif

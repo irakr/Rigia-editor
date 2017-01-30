@@ -24,3 +24,24 @@
  * 
  * For more information, please refer to <http://unlicense.org>
  */
+
+/*
+ * main.cc
+ *
+ * This is the entry point for the 'Rigia-editor' program.
+ * This module invokes the 'editor' module and everything later is taken care by that module.
+ */
+
+#include "io.h"
+#include "file_manip.h"
+#include "exceptions.h"
+#include "editor.h"
+
+/* Main	*/
+int main(int argc, char *argv[]) {
+	
+	printf("\t\t--- Welcome to Rigia-editor ---\n");
+	ViMode_.run();
+	
+	return 0;
+}
