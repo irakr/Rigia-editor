@@ -43,3 +43,4 @@ clean:
 	-rm *.o
 	-rm $(SOURCE_DIR)*.o
 	-rm -rf $(BIN_DIR)
+	-rm test_module

@@ -53,6 +53,7 @@ typedef struct {
 	int offset; //Position in which the next incoming character will be pushed. Buffer will be flushed when this reaches MAX_BUFF_SIZE-1.
 } Buffer;
 
+
 // Abstract class for each type of modes of the vi-editor
 class ModeInterface {
 public:
@@ -73,7 +74,7 @@ public:
 	virtual void rest() = 0; //Rest the current mode so that the new mode can start without any overlaps
 	virtual void set_parameters() = 0; //Set the necessary parameters for a mode
 	
-	const char* mode() { return mode_;}
+	friend class Editor;	//Since the Editor class will control all operations externally it need access to all members.
 	
 protected:
 	const char* mode_;
@@ -115,17 +116,25 @@ public:
 	void set_parameters();
 } InputMode_;
 
+#define FILENAME_LEN_MAX 128
+
+// A linked list node to store names of every opened file
+typedef struct _NameList_ {
+	char name[FILENAME_LEN_MAX];
+	struct _NameList_ *next;
+} NameList;
 
 /* The main Editor module */
 class Editor {
 public:
-	Editor();
+	Editor();	
 	
 	void switch_mode(char *mode);
 	void start();
-	
+	void init_active_files(int, char*[]);
 private:
 	ModeInterface *active_mode_;
+	NameList *active_files_;
 };
 
 

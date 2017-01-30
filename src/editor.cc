@@ -134,10 +134,25 @@ void InputMode :: run() {
 /**************************************** Editor ************************************/
 
 Editor :: Editor() {
-	active_mode_ = &ViMode_;
+	active_mode_ = &ViMode_;	//Default
+}
+
+void Editor :: init_active_files(int count, char *file_names[]) {
+	if(count == 0)
+		return;
+	active_files_ = new NameList();
+	NameList *ptr = active_files_;
+	int i = 0;
+	strcpy(ptr->name, file_names[i++]);
+	while(i < count) {
+		ptr->next = new NameList();
+		ptr = ptr->next;
+		strcpy(ptr->name, file_names[i++]);
+	}
+	ptr->next = NULL;
 }
 
 void Editor :: start() {
 	printf("Starting editor...\n");
-	printf("Current mode: %s\n", active_mode_->mode());
+	printf("Current mode: %s\n", active_mode_->mode_);
 }

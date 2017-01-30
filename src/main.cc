@@ -40,8 +40,16 @@
 /* Main	*/
 int main(int argc, char *argv[]) {
 	
+	//TODO... After the implementation of editing multiple files in different tabs, the below if() condition will be removed and only the
+	//init_system(); line will be present.
+	
 	printf("\t\t--- Welcome to Rigia-editor ---\n");
-	(new Editor())->start();
+	
+	// Create and set-up editor
+	Editor editor;
+	editor.init_active_files(argc-1, argv+1); //Since 0th argv is the command's name itself
+	editor.start();
 	
 	return 0;
 }
+
