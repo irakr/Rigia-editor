@@ -41,7 +41,7 @@
 int main(int argc, char *argv[]) {
 	
 	printf("\t\t--- Welcome to Rigia-editor ---\n");
-	ViMode_.run();
+	(new Editor())->start();
 	
 	return 0;
 }

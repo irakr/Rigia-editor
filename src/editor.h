@@ -46,41 +46,87 @@
 #define 	VI_MODE			0
 #define 	DEFAULT_MODE 	VI_MODE
 
+#define MAX_BUFF_SIZE 1024
 // A simple struct for a buffer
 typedef struct {
 	char* buff;
 	int offset; //Position in which the next incoming character will be pushed. Buffer will be flushed when this reaches MAX_BUFF_SIZE-1.
 } Buffer;
 
-#define MAX_BUFF_SIZE 256
-
 // Abstract class for each type of modes of the vi-editor
 class ModeInterface {
 public:
-	//ModeInterface();
-	//~ModeInterface();
+	ModeInterface(const char* mode) {
+		mode_ = mode;
+		internal_buffer_.buff = new char[MAX_BUFF_SIZE];
+		internal_buffer_.offset = 0;
+	}
+	~ModeInterface() {
+		mode_ = NULL;
+		delete io_input_;
+		delete io_output_;
+		delete file_manip_;
+		delete[] internal_buffer_.buff;
+	}
 	
-	virtual int change_mode_to(int) = 0; //Change from current mode to the target mode
 	virtual void run() = 0;	//Start running the current mode after setting all the parameters correctly
 	virtual void rest() = 0; //Rest the current mode so that the new mode can start without any overlaps
 	virtual void set_parameters() = 0; //Set the necessary parameters for a mode
 	
+	const char* mode() { return mode_;}
+	
 protected:
-	int mode_;
+	const char* mode_;
 	InputHandler *io_input_; //Handles the input characters
 	OutputHandler *io_output_; //Handles the output characters
 	FileManipUnit *file_manip_; //Handles the file operations
 	Buffer internal_buffer_;	//Internal buffer
 };
 
+// VI mode
 static class ViMode : public ModeInterface {
 public:
-	ViMode();
-	~ViMode();
-	int change_mode_to(int);
+	ViMode() : ModeInterface("vi-mode") { }
+	~ViMode() { }
 	void run();
 	void rest();
 	void set_parameters();
 } ViMode_;
+
+// Command mode
+static class CommandMode : public ModeInterface {
+public:
+	CommandMode() : ModeInterface("command-mode") { }
+	~CommandMode() { }
+	
+	void run();
+	void rest();
+	void set_parameters();
+} CommandMode_;
+
+// Input mode
+static class InputMode : public ModeInterface {
+public:
+	InputMode() : ModeInterface("input-mode") { }
+	~InputMode() { }
+	
+	void run();
+	void rest();
+	void set_parameters();
+} InputMode_;
+
+
+/* The main Editor module */
+class Editor {
+public:
+	Editor();
+	
+	void switch_mode(char *mode);
+	void start();
+	
+private:
+	ModeInterface *active_mode_;
+};
+
 
 #endif

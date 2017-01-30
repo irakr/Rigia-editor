@@ -37,24 +37,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "editor.h"
 //TODO... Perhaps we can make use of ioctl() or some other similar functions to control the behaviour of the terminal.
+#include <sys/ioctl.h>
+#include "editor.h"
 
-ViMode :: ViMode() {
-	mode_ = VI_MODE;
-	internal_buffer_.buff = new char[MAX_BUFF_SIZE];
-	internal_buffer_.offset = 0;
-}
 
-ViMode :: ~ViMode() {
+/********************************************* VI Mode ***************************************/
 
-}
-
-int ViMode :: change_mode_to(int mode) {
-	mode_ = mode;
-	printf("Mode changed to : %s\n", "Vi-Mode");
-	return 0;
-}
 
 void ViMode :: rest() {
 	printf("Resting in %s\n", "Vi-Mode");
@@ -76,9 +65,79 @@ void ViMode :: run() {
 				internal_buffer_.offset++;
 			}
 		}
-		if(internal_buffer_.buff[internal_buffer_.offset-1] == ESC)
-			change_mode_to(VI_MODE);
+		if(internal_buffer_.buff[internal_buffer_.offset-1] == ESC);
+			//change_mode_to(VI_MODE);
 		//else if('i') then rest() this mode and switch mode to INPUT_MODE TODO
 	}
 	
+}
+
+/*************************************** Command Mode **************************************/
+
+
+void CommandMode :: rest() {
+	printf("Resting in %s\n", "Command-Mode");
+}
+
+void CommandMode :: set_parameters() {
+	printf("Setting parameters %s\n", "Command-Mode");
+}
+
+// Execution of the mode
+void CommandMode :: run() {
+	while(read(STDIN_FILENO, &internal_buffer_.buff[internal_buffer_.offset], 1) > 0) {
+		if(internal_buffer_.offset < MAX_BUFF_SIZE) {
+			if(internal_buffer_.offset == MAX_BUFF_SIZE-1) {
+				//flush buffer to a file
+				internal_buffer_.offset = 0;
+			}
+			else {
+				internal_buffer_.offset++;
+			}
+		}
+		if(internal_buffer_.buff[internal_buffer_.offset-1] == ESC);
+			//change_mode_to(VI_MODE);
+		//else if('i') then rest() this mode and switch mode to INPUT_MODE TODO
+	}
+	
+}
+
+/*************************************** Input Mode ****************************************/
+
+void InputMode :: rest() {
+	printf("Resting in %s\n", "Input-Mode");
+}
+
+void InputMode :: set_parameters() {
+	printf("Setting parameters %s\n", "Input-Mode");
+}
+
+// Execution of the mode
+void InputMode :: run() {
+	while(read(STDIN_FILENO, &internal_buffer_.buff[internal_buffer_.offset], 1) > 0) {
+		if(internal_buffer_.offset < MAX_BUFF_SIZE) {
+			if(internal_buffer_.offset == MAX_BUFF_SIZE-1) {
+				//flush buffer to a file
+				internal_buffer_.offset = 0;
+			}
+			else {
+				internal_buffer_.offset++;
+			}
+		}
+		if(internal_buffer_.buff[internal_buffer_.offset-1] == ESC);
+			//change_mode_to(VI_MODE);
+		//else if('i') then rest() this mode and switch mode to INPUT_MODE TODO
+	}
+	
+}
+
+/**************************************** Editor ************************************/
+
+Editor :: Editor() {
+	active_mode_ = &ViMode_;
+}
+
+void Editor :: start() {
+	printf("Starting editor...\n");
+	printf("Current mode: %s\n", active_mode_->mode());
 }
