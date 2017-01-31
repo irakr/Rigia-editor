@@ -32,5 +32,6 @@
 
 #include "exceptions.h"
 #include <string.h>
+#include <exception>
 
 

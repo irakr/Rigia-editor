@@ -41,18 +41,36 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-// This class handles all incoming characters entered by the user in the editor environment.
-class InputHandler {
+#define MAX_BUFF_SIZE 1024
+// A simple struct for a buffer
+typedef struct {
+	char* buff;
+	int offset; //Position in which the next incoming character will be pushed. Buffer will be flushed when this reaches MAX_BUFF_SIZE-1.
+} Buffer;
+
+//Abstract class for IO handlers
+class IOHandler {
 public:
-	InputHandler();
-	
+	IOHandler() {
+		internal_buffer_.buff = new char[MAX_BUFF_SIZE];
+		internal_buffer_.offset = 0;
+	}
+protected:
+	Buffer internal_buffer_;
+};
+
+// This class handles all incoming characters entered by the user in the editor environment.
+class InputHandler : public IOHandler {
+public:
+	InputHandler() : IOHandler() { }
+private:
 };
 
 // This class handles how characters will be displayed on the terminal and their behaviour.
-class OutputHandler {
+class OutputHandler  : public IOHandler {
 public:
-	OutputHandler();
-	
+	OutputHandler() : IOHandler() { }
+private:
 };
 
 #endif

@@ -36,15 +36,24 @@
 
 #define EXC_MESSAGE_LEN 256
 
-#include <exception>
+//#include <string.h>
+#include <stdexcept>
+
+#define DEFAULT_EXCEPTION_MESSAGE "Rigia-editor exception generated"
+
+using namespace std;
+
+class EditorRuntimeException : public runtime_error {
+public:
+	EditorRuntimeException() : runtime_error(DEFAULT_EXCEPTION_MESSAGE) { }
+	EditorRuntimeException(const char *message) : runtime_error(message) { }
+};
 
 // Memory related exceptions
-class MemoryException {
+class BufferException : public EditorRuntimeException {
 public:
-	MemoryException() : message("") { }
-	MemoryException(char *message);
-private:
-	char message[EXC_MESSAGE_LEN];
+	BufferException() : EditorRuntimeException(DEFAULT_EXCEPTION_MESSAGE) { }
+	BufferException(const char *message) : EditorRuntimeException(message) { }
 };
 
 #endif

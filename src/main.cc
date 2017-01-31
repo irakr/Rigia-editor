@@ -37,13 +37,15 @@
 #include "exceptions.h"
 #include "editor.h"
 
+/* Initialize components of the system	*/
+void init_system();
+
 /* Main	*/
 int main(int argc, char *argv[]) {
 	
-	//TODO... After the implementation of editing multiple files in different tabs, the below if() condition will be removed and only the
-	//init_system(); line will be present.
-	
 	printf("\t\t--- Welcome to Rigia-editor ---\n");
+	
+	init_system();
 	
 	// Create and set-up editor
 	Editor editor;
@@ -53,3 +55,11 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
+void init_system() {
+	ViMode_.setup_io((new InputHandler()), (new OutputHandler()));
+	ViMode_.setup_filemanip(new FileManipUnit());
+	CommandMode_.setup_io((new InputHandler()), (new OutputHandler()));
+	CommandMode_.setup_filemanip(new FileManipUnit());
+	InputMode_.setup_io((new InputHandler()), (new OutputHandler()));
+	InputMode_.setup_filemanip(new FileManipUnit());
+}

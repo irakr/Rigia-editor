@@ -46,14 +46,6 @@
 #define 	VI_MODE			0
 #define 	DEFAULT_MODE 	VI_MODE
 
-#define MAX_BUFF_SIZE 1024
-// A simple struct for a buffer
-typedef struct {
-	char* buff;
-	int offset; //Position in which the next incoming character will be pushed. Buffer will be flushed when this reaches MAX_BUFF_SIZE-1.
-} Buffer;
-
-
 // Abstract class for each type of modes of the vi-editor
 class ModeInterface {
 public:
@@ -70,18 +62,21 @@ public:
 		delete[] internal_buffer_.buff;
 	}
 	
-	virtual void run() = 0;	//Start running the current mode after setting all the parameters correctly
-	virtual void rest() = 0; //Rest the current mode so that the new mode can start without any overlaps
-	virtual void set_parameters() = 0; //Set the necessary parameters for a mode
+	virtual void run() = 0;										//Start running the current mode after setting all the parameters correctly
+	virtual void rest() = 0; 									//Rest the current mode so that the new mode can start without any overlaps
+	virtual void setup_io(InputHandler*, OutputHandler*) = 0; 	//Sets up the io_handler parameters for a mode
+	virtual void setup_filemanip(FileManipUnit*) = 0; 			//Sets up the file_manipulator parameters for a mode
 	
-	friend class Editor;	//Since the Editor class will control all operations externally it need access to all members.
+	//Since the Editor class will control all operations externally it need access to all members
+	friend class Editor;											
 	
 protected:
 	const char* mode_;
 	InputHandler *io_input_; //Handles the input characters
 	OutputHandler *io_output_; //Handles the output characters
 	FileManipUnit *file_manip_; //Handles the file operations
-	Buffer internal_buffer_;	//Internal buffer
+	Buffer internal_buffer_;	//Internal buffer (Different from io buffer).
+								//This buffer stores the characters that are echoed to the screen while the user is typing.
 };
 
 // VI mode
@@ -91,7 +86,8 @@ public:
 	~ViMode() { }
 	void run();
 	void rest();
-	void set_parameters();
+	void setup_io(InputHandler*, OutputHandler*);
+	void setup_filemanip(FileManipUnit*);
 } ViMode_;
 
 // Command mode
@@ -102,7 +98,8 @@ public:
 	
 	void run();
 	void rest();
-	void set_parameters();
+	void setup_io(InputHandler* in, OutputHandler* out);
+	void setup_filemanip(FileManipUnit*);
 } CommandMode_;
 
 // Input mode
@@ -113,11 +110,11 @@ public:
 	
 	void run();
 	void rest();
-	void set_parameters();
+	void setup_io(InputHandler* in, OutputHandler* out);
+	void setup_filemanip(FileManipUnit*);
 } InputMode_;
 
 #define FILENAME_LEN_MAX 128
-
 // A linked list node to store names of every opened file
 typedef struct _NameList_ {
 	char name[FILENAME_LEN_MAX];
@@ -129,12 +126,12 @@ class Editor {
 public:
 	Editor();	
 	
-	void switch_mode(char *mode);
+	void switch_mode(char*);
 	void start();
 	void init_active_files(int, char*[]);
 private:
 	ModeInterface *active_mode_;
-	NameList *active_files_;
+	NameList *active_files_; //Implemented as a linked list.
 };
 
 

@@ -44,13 +44,21 @@
 
 /********************************************* VI Mode ***************************************/
 
+void ViMode :: setup_io(InputHandler* in, OutputHandler* out) {
+	if((in == NULL) || (out == NULL))
+		throw EditorRuntimeException("NULL IOHandler parameters provided in ViMode::setup_io()");
+	this->io_input_ = in;
+	this->io_output_ = out;
+}
+
+void ViMode :: setup_filemanip(FileManipUnit* f) {
+	if(f == NULL)
+		throw EditorRuntimeException("NULL FileManipUnit parameters provided in ViMode::setup_filemanip()");
+	this->file_manip_ = f;
+}
 
 void ViMode :: rest() {
 	printf("Resting in %s\n", "Vi-Mode");
-}
-
-void ViMode :: set_parameters() {
-	printf("Setting parameters %s\n", "Vi-Mode");
 }
 
 // Execution of the mode
@@ -74,13 +82,21 @@ void ViMode :: run() {
 
 /*************************************** Command Mode **************************************/
 
+void CommandMode :: setup_io(InputHandler* in, OutputHandler* out) {
+	if((in == NULL) || (out == NULL))
+		throw EditorRuntimeException("NULL IOHandler parameters provided in CommandMode::setup_io()");
+	this->io_input_ = in;
+	this->io_output_ = out;
+}
+
+void CommandMode :: setup_filemanip(FileManipUnit* f) {
+	if(f == NULL)
+		throw EditorRuntimeException("NULL FileManipUnit parameters provided in CommandMode::setup_filemanip()");
+	this->file_manip_ = new FileManipUnit();
+}
 
 void CommandMode :: rest() {
 	printf("Resting in %s\n", "Command-Mode");
-}
-
-void CommandMode :: set_parameters() {
-	printf("Setting parameters %s\n", "Command-Mode");
 }
 
 // Execution of the mode
@@ -104,12 +120,21 @@ void CommandMode :: run() {
 
 /*************************************** Input Mode ****************************************/
 
-void InputMode :: rest() {
-	printf("Resting in %s\n", "Input-Mode");
+void InputMode :: setup_io(InputHandler* in, OutputHandler* out) {
+	if((in == NULL) || (out == NULL))
+		throw EditorRuntimeException("NULL IOHandler parameters provided in InputMode::setup_io()");
+	this->io_input_ = in;
+	this->io_output_ = out;
 }
 
-void InputMode :: set_parameters() {
-	printf("Setting parameters %s\n", "Input-Mode");
+void InputMode :: setup_filemanip(FileManipUnit* f) {
+	if(f == NULL)
+		throw EditorRuntimeException("NULL FileManipUnit parameters provided in InputMode::setup_filemanip()");
+	this->file_manip_ = new FileManipUnit();
+}
+
+void InputMode :: rest() {
+	printf("Resting in %s\n", "Input-Mode");
 }
 
 // Execution of the mode
@@ -140,6 +165,7 @@ Editor :: Editor() {
 void Editor :: init_active_files(int count, char *file_names[]) {
 	if(count == 0)
 		return;
+	//Fills up the linked list 'active_files_'
 	active_files_ = new NameList();
 	NameList *ptr = active_files_;
 	int i = 0;
