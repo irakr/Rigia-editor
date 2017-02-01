@@ -36,24 +36,51 @@
 
 #define EXC_MESSAGE_LEN 256
 
-//#include <string.h>
+#include <string.h>
+#include <exception>
 #include <stdexcept>
 
 #define DEFAULT_EXCEPTION_MESSAGE "Rigia-editor exception generated"
 
 using namespace std;
 
+// Just an exception specifying a runtime error
 class EditorRuntimeException : public runtime_error {
 public:
 	EditorRuntimeException() : runtime_error(DEFAULT_EXCEPTION_MESSAGE) { }
-	EditorRuntimeException(const char *message) : runtime_error(message) { }
+	EditorRuntimeException(const char *msg) : runtime_error(msg) { }
+	const char* what() const noexcept { return message; }
+private:
+	char message[EXC_MESSAGE_LEN];
 };
 
 // Memory related exceptions
 class BufferException : public EditorRuntimeException {
 public:
 	BufferException() : EditorRuntimeException(DEFAULT_EXCEPTION_MESSAGE) { }
-	BufferException(const char *message) : EditorRuntimeException(message) { }
+	BufferException(const char *msg) : EditorRuntimeException(msg) { }
+	const char* what() const noexcept { return message; }
+private:
+	char message[EXC_MESSAGE_LEN];
+};
+
+/* NOTE: The below defined exception class is not an erroneous exception. Its just a trick I used to switch modes. Just
+ *			using the interrupt like behaviour of exception generation and handling.
+ * Anyway this might only be a temporary implementation but lets see.
+ */
+ 
+// Exception for changing mode
+class ModeSwitchException : public exception {
+public:
+	ModeSwitchException() { }
+	ModeSwitchException(const char* msg, const char* modename) {
+		strcpy(message, msg);
+		strcpy(modename_, modename);
+	}
+	const char* what() const noexcept { return message; }
+	const char* modename() { return modename_; }
+private:
+	char message[EXC_MESSAGE_LEN], modename_[25];
 };
 
 #endif

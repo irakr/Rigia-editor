@@ -37,29 +37,33 @@
 #include "exceptions.h"
 #include "editor.h"
 
+/* The global editor object. This object has the top view of all the sub-systems. */
+Editor editor;
+
 /* Initialize components of the system	*/
-void init_system();
+void init_system(int, char*[]);
 
 /* Main	*/
 int main(int argc, char *argv[]) {
 	
 	printf("\t\t--- Welcome to Rigia-editor ---\n");
 	
-	init_system();
+	init_system(argc-1, argv+1);
 	
 	// Create and set-up editor
-	Editor editor;
-	editor.init_active_files(argc-1, argv+1); //Since 0th argv is the command's name itself
 	editor.start();
 	
 	return 0;
 }
 
-void init_system() {
-	ViMode_.setup_io((new InputHandler()), (new OutputHandler()));
-	ViMode_.setup_filemanip(new FileManipUnit());
-	CommandMode_.setup_io((new InputHandler()), (new OutputHandler()));
-	CommandMode_.setup_filemanip(new FileManipUnit());
-	InputMode_.setup_io((new InputHandler()), (new OutputHandler()));
-	InputMode_.setup_filemanip(new FileManipUnit());
+void init_system(int argc, char *argv[]) {
+	InputHandler *i = new InputHandler();
+	OutputHandler *o = new OutputHandler();
+	//TODO... Do some initializations
+	editor.setup_io(i, o);
+
+	FileManipUnit *f = new FileManipUnit();
+	f->init_active_files(argc, argv);
+	editor.setup_filemanip(f);
+	
 }

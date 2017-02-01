@@ -36,12 +36,7 @@
 #ifndef RIG_IO_H_
 #define RIG_IO_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#define MAX_BUFF_SIZE 1024
+#define MAX_BUFF_SIZE 65535
 // A simple struct for a buffer
 typedef struct {
 	char* buff;
@@ -53,16 +48,19 @@ class IOHandler {
 public:
 	IOHandler() {
 		internal_buffer_.buff = new char[MAX_BUFF_SIZE];
-		internal_buffer_.offset = 0;
+		internal_buffer_.offset = -1;
 	}
+	inline bool buffer_empty() { return (internal_buffer_.offset == -1); }
 protected:
-	Buffer internal_buffer_;
+	Buffer internal_buffer_; //This buffer is used for optimizing the use of system calls
 };
 
-// This class handles all incoming characters entered by the user in the editor environment.
+// This class handles all incoming input by the user to the editor environment.
 class InputHandler : public IOHandler {
 public:
 	InputHandler() : IOHandler() { }
+	char* read_stream(); //Reads a buffered stream of input characters.
+	char* read_key(); //Reads a single input key press(No buffering)
 private:
 };
 

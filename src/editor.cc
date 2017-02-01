@@ -37,63 +37,30 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-//TODO... Perhaps we can make use of ioctl() or some other similar functions to control the behaviour of the terminal.
-#include <sys/ioctl.h>
 #include "editor.h"
 
+extern Editor editor;
 
 /********************************************* VI Mode ***************************************/
-
-void ViMode :: setup_io(InputHandler* in, OutputHandler* out) {
-	if((in == NULL) || (out == NULL))
-		throw EditorRuntimeException("NULL IOHandler parameters provided in ViMode::setup_io()");
-	this->io_input_ = in;
-	this->io_output_ = out;
-}
-
-void ViMode :: setup_filemanip(FileManipUnit* f) {
-	if(f == NULL)
-		throw EditorRuntimeException("NULL FileManipUnit parameters provided in ViMode::setup_filemanip()");
-	this->file_manip_ = f;
-}
 
 void ViMode :: rest() {
 	printf("Resting in %s\n", "Vi-Mode");
 }
 
 // Execution of the mode
-void ViMode :: run() {
-	while(read(STDIN_FILENO, &internal_buffer_.buff[internal_buffer_.offset], 1) > 0) {
-		if(internal_buffer_.offset < MAX_BUFF_SIZE) {
-			if(internal_buffer_.offset == MAX_BUFF_SIZE-1) {
-				//flush buffer to a file
-				internal_buffer_.offset = 0;
-			}
-			else {
-				internal_buffer_.offset++;
-			}
-		}
-		if(internal_buffer_.buff[internal_buffer_.offset-1] == ESC);
-			//change_mode_to(VI_MODE);
-		//else if('i') then rest() this mode and switch mode to INPUT_MODE TODO
+void ViMode :: run() {	
+	while(1) {
+		char c = *editor.io_input()->read_key();
+		if(c == ESC)
+			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
+		else if(c == ':')
+			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "command-mode"));
+		else if(c == 'i')
+			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "input-mode"));
 	}
-	
 }
 
 /*************************************** Command Mode **************************************/
-
-void CommandMode :: setup_io(InputHandler* in, OutputHandler* out) {
-	if((in == NULL) || (out == NULL))
-		throw EditorRuntimeException("NULL IOHandler parameters provided in CommandMode::setup_io()");
-	this->io_input_ = in;
-	this->io_output_ = out;
-}
-
-void CommandMode :: setup_filemanip(FileManipUnit* f) {
-	if(f == NULL)
-		throw EditorRuntimeException("NULL FileManipUnit parameters provided in CommandMode::setup_filemanip()");
-	this->file_manip_ = new FileManipUnit();
-}
 
 void CommandMode :: rest() {
 	printf("Resting in %s\n", "Command-Mode");
@@ -101,37 +68,14 @@ void CommandMode :: rest() {
 
 // Execution of the mode
 void CommandMode :: run() {
-	while(read(STDIN_FILENO, &internal_buffer_.buff[internal_buffer_.offset], 1) > 0) {
-		if(internal_buffer_.offset < MAX_BUFF_SIZE) {
-			if(internal_buffer_.offset == MAX_BUFF_SIZE-1) {
-				//flush buffer to a file
-				internal_buffer_.offset = 0;
-			}
-			else {
-				internal_buffer_.offset++;
-			}
-		}
-		if(internal_buffer_.buff[internal_buffer_.offset-1] == ESC);
-			//change_mode_to(VI_MODE);
-		//else if('i') then rest() this mode and switch mode to INPUT_MODE TODO
+	while(1) {
+		char c = *editor.io_input()->read_key();
+		if(c == ESC)
+			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 	}
-	
 }
 
 /*************************************** Input Mode ****************************************/
-
-void InputMode :: setup_io(InputHandler* in, OutputHandler* out) {
-	if((in == NULL) || (out == NULL))
-		throw EditorRuntimeException("NULL IOHandler parameters provided in InputMode::setup_io()");
-	this->io_input_ = in;
-	this->io_output_ = out;
-}
-
-void InputMode :: setup_filemanip(FileManipUnit* f) {
-	if(f == NULL)
-		throw EditorRuntimeException("NULL FileManipUnit parameters provided in InputMode::setup_filemanip()");
-	this->file_manip_ = new FileManipUnit();
-}
 
 void InputMode :: rest() {
 	printf("Resting in %s\n", "Input-Mode");
@@ -139,46 +83,55 @@ void InputMode :: rest() {
 
 // Execution of the mode
 void InputMode :: run() {
-	while(read(STDIN_FILENO, &internal_buffer_.buff[internal_buffer_.offset], 1) > 0) {
-		if(internal_buffer_.offset < MAX_BUFF_SIZE) {
-			if(internal_buffer_.offset == MAX_BUFF_SIZE-1) {
-				//flush buffer to a file
-				internal_buffer_.offset = 0;
-			}
-			else {
-				internal_buffer_.offset++;
-			}
-		}
-		if(internal_buffer_.buff[internal_buffer_.offset-1] == ESC);
-			//change_mode_to(VI_MODE);
-		//else if('i') then rest() this mode and switch mode to INPUT_MODE TODO
+	while(1) {
+		char c = *editor.io_input()->read_key();
+		if(c == ESC)
+			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 	}
-	
 }
 
 /**************************************** Editor ************************************/
 
-Editor :: Editor() {
-	active_mode_ = &ViMode_;	//Default
+void Editor :: setup_io(InputHandler* in, OutputHandler* out) {
+	if((in == NULL) || (out == NULL))
+		throw EditorRuntimeException("NULL IOHandler parameters provided in editor::setup_io()");
+	//Setup in and out first... TODO
+	
+	this->io_input_ = in;
+	this->io_output_ = out;
 }
 
-void Editor :: init_active_files(int count, char *file_names[]) {
-	if(count == 0)
-		return;
-	//Fills up the linked list 'active_files_'
-	active_files_ = new NameList();
-	NameList *ptr = active_files_;
-	int i = 0;
-	strcpy(ptr->name, file_names[i++]);
-	while(i < count) {
-		ptr->next = new NameList();
-		ptr = ptr->next;
-		strcpy(ptr->name, file_names[i++]);
+void Editor :: setup_filemanip(FileManipUnit* f) {
+	if(f == NULL)
+		throw EditorRuntimeException("NULL FileManipUnit parameters provided in editor::setup_filemanip()");
+	//Setup f first... TODO
+	
+	this->file_manip_ = f;
+}
+
+void Editor :: switch_mode(const char *modename) {
+	if(!strcmp(modename, "vi-mode")) {
+		active_mode_ = &ViMode_;
 	}
-	ptr->next = NULL;
+	else if(!strcmp(modename, "command-mode")) {
+		active_mode_ = &CommandMode_;
+	}
+	else if(!strcmp(modename, "input-mode")) {
+		active_mode_ = &InputMode_;
+	}
 }
-
 void Editor :: start() {
 	printf("Starting editor...\n");
-	printf("Current mode: %s\n", active_mode_->mode_);
+	printf("Current mode: %s\n", active_mode_->modename_);
+	
+	while(1) {
+		try {
+			active_mode_->run();
+		}
+		catch(ModeSwitchException e) {
+			active_mode_->rest();
+			switch_mode(e.modename());
+		}
+		
+	}
 }

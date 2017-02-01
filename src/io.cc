@@ -29,5 +29,36 @@
  * io.cc
  */
  
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+//TODO... Perhaps we can make use of ioctl() or some other similar functions to control the behaviour of the terminal.
+#include <sys/ioctl.h>
 #include "io.h"
 
+// TODO... This is still not an optimal implementation. Need to have access to kernel space and have an internal buffer there,
+// maybe within a self written read() like system call.
+char* InputHandler :: read_stream() {
+	char *ptr;
+	
+	//TODO...XXX Still pending
+	if((internal_buffer_.offset == -1) || (internal_buffer_.offset == MAX_BUFF_SIZE-1)) //For initialization or renewal of buffer
+		internal_buffer_.offset = 0;
+	ptr = &internal_buffer_.buff[internal_buffer_.offset];
+	
+	if(buffer_empty() == true) {
+		//The STDIN_FILENO maybe changed to a pts/x soon, for a better operation. TODO
+		while(read(STDIN_FILENO, &internal_buffer_.buff[internal_buffer_.offset], MAX_BUFF_SIZE) > 0) {
+			internal_buffer_.offset++;
+		}
+	}
+	return ptr;
+}
+
+char* InputHandler :: read_key() {
+	static char c;
+	if(read(STDIN_FILENO, &c, 1) == 1)
+		return &c;
+	return NULL;
+}

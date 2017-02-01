@@ -48,90 +48,74 @@
 
 // Abstract class for each type of modes of the vi-editor
 class ModeInterface {
+
 public:
-	ModeInterface(const char* mode) {
-		mode_ = mode;
-		internal_buffer_.buff = new char[MAX_BUFF_SIZE];
-		internal_buffer_.offset = 0;
-	}
-	~ModeInterface() {
-		mode_ = NULL;
-		delete io_input_;
-		delete io_output_;
-		delete file_manip_;
-		delete[] internal_buffer_.buff;
-	}
+	ModeInterface(const char* mode) { modename_ = mode;	}
+	~ModeInterface() { modename_ = NULL; }
 	
-	virtual void run() = 0;										//Start running the current mode after setting all the parameters correctly
-	virtual void rest() = 0; 									//Rest the current mode so that the new mode can start without any overlaps
-	virtual void setup_io(InputHandler*, OutputHandler*) = 0; 	//Sets up the io_handler parameters for a mode
-	virtual void setup_filemanip(FileManipUnit*) = 0; 			//Sets up the file_manipulator parameters for a mode
+	virtual void run() = 0;	 //Start running the current mode after setting all the parameters correctly
+	virtual void rest() = 0; //Rest and also save state of the current mode so that the new mode can start without any overlaps
 	
 	//Since the Editor class will control all operations externally it need access to all members
 	friend class Editor;											
 	
 protected:
-	const char* mode_;
-	InputHandler *io_input_; //Handles the input characters
-	OutputHandler *io_output_; //Handles the output characters
-	FileManipUnit *file_manip_; //Handles the file operations
-	Buffer internal_buffer_;	//Internal buffer (Different from io buffer).
-								//This buffer stores the characters that are echoed to the screen while the user is typing.
+	const char* modename_;
 };
 
 // VI mode
 static class ViMode : public ModeInterface {
+
 public:
 	ViMode() : ModeInterface("vi-mode") { }
 	~ViMode() { }
 	void run();
 	void rest();
-	void setup_io(InputHandler*, OutputHandler*);
-	void setup_filemanip(FileManipUnit*);
+	
 } ViMode_;
 
 // Command mode
 static class CommandMode : public ModeInterface {
+
 public:
 	CommandMode() : ModeInterface("command-mode") { }
 	~CommandMode() { }
 	
 	void run();
 	void rest();
-	void setup_io(InputHandler* in, OutputHandler* out);
-	void setup_filemanip(FileManipUnit*);
 } CommandMode_;
 
 // Input mode
 static class InputMode : public ModeInterface {
+
 public:
 	InputMode() : ModeInterface("input-mode") { }
 	~InputMode() { }
 	
 	void run();
 	void rest();
-	void setup_io(InputHandler* in, OutputHandler* out);
-	void setup_filemanip(FileManipUnit*);
+//XXX... Maybe a buffer will be needed for this class object
+private:
+	//Buffer buff;
 } InputMode_;
-
-#define FILENAME_LEN_MAX 128
-// A linked list node to store names of every opened file
-typedef struct _NameList_ {
-	char name[FILENAME_LEN_MAX];
-	struct _NameList_ *next;
-} NameList;
 
 /* The main Editor module */
 class Editor {
+
 public:
-	Editor();	
+	Editor() { active_mode_ = &ViMode_; } //Default
 	
-	void switch_mode(char*);
+	void switch_mode(const char*);
 	void start();
-	void init_active_files(int, char*[]);
+	void setup_io(InputHandler*, OutputHandler*);
+	void setup_filemanip(FileManipUnit*);
+	InputHandler* io_input() { return io_input_; }
+	OutputHandler* io_output() { return io_output_; }
 private:
 	ModeInterface *active_mode_;
-	NameList *active_files_; //Implemented as a linked list.
+	InputHandler *io_input_; //Handles the input characters
+	OutputHandler *io_output_; //Handles the output characters
+	FileManipUnit *file_manip_; //Handles the file operations
 };
 
 

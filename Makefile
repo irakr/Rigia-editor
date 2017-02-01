@@ -7,7 +7,7 @@ ALL_DIRS=$(SOURCE_DIR)
 
 # Compiler and flags
 CPP=g++
-CFLAGS=-Wall -Wno-write-strings -O3
+CFLAGS=-Wall -Wno-write-strings -O3 -std=c++11
 FLAG_ALL_DIRS=-I$(SOURCE_DIR)
 # Loader command
 LD=ld

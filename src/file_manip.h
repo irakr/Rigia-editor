@@ -41,15 +41,24 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define FILENAME_LEN_MAX 128
+// A linked list node to store info of every opened file
+typedef struct _FileList_ {
+	int fd; //file descriptor
+	char name[FILENAME_LEN_MAX];
+	struct _FileList_ *next;
+} FileList;
+
 // This class is used for providing file management functionalities.
 class FileManipUnit {
 public:
-	FileManipUnit() : write_fd_(STDOUT_FILENO), read_fd_(STDIN_FILENO), write_filename_("stdout"), read_filename_("stdin") { }
+	//FileManipUnit() : write_fd_(STDOUT_FILENO), read_fd_(STDIN_FILENO), write_filename_("stdout"), read_filename_("stdin") { }
+	FileManipUnit() { }
 	//FileManipUnit(int fd, char *name);
+	
+	void init_active_files(int, char*[]);
 private:
-	int write_fd_;	//Descriptor of the file that is currently being edited
-	int read_fd_;	//Descriptor of the file from which the editor is reading characters
-	char *write_filename_, *read_filename_;
+	FileList *active_files_; //List of opened filenames. Implemented as a linked list.
 };
 
 #endif

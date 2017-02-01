@@ -32,5 +32,20 @@
 #include "file_manip.h"
 #include <string.h>
 
+void FileManipUnit :: init_active_files(int count, char *file_names[]) {
+	if(count == 0)
+		return;
+	//Fills up the linked list 'active_files_'
+	active_files_ = new FileList();
+	FileList *ptr = active_files_;
+	int i = 0;
+	strcpy(ptr->name, file_names[i++]);
+	while(i < count) {
+		ptr->next = new FileList();
+		ptr = ptr->next;
+		strcpy(ptr->name, file_names[i++]);
+	}
+	ptr->next = NULL;
+}
 
 
