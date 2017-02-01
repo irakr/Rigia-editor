@@ -50,13 +50,13 @@ void ViMode :: rest() {
 // Execution of the mode
 void ViMode :: run() {	
 	while(1) {
-		char c = *editor.io_input()->read_key();
+		char c = editor.io_input()->read_key();
 		if(c == ESC)
-			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
+			throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 		else if(c == ':')
-			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "command-mode"));
+			throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "command-mode"));
 		else if(c == 'i')
-			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "input-mode"));
+			throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "input-mode"));
 	}
 }
 
@@ -69,9 +69,9 @@ void CommandMode :: rest() {
 // Execution of the mode
 void CommandMode :: run() {
 	while(1) {
-		char c = *editor.io_input()->read_key();
+		char c = editor.io_input()->read_key();
 		if(c == ESC)
-			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
+			throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 	}
 }
 
@@ -84,9 +84,9 @@ void InputMode :: rest() {
 // Execution of the mode
 void InputMode :: run() {
 	while(1) {
-		char c = *editor.io_input()->read_key();
+		char c = editor.io_input()->read_key();
 		if(c == ESC)
-			throw (new ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
+			throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 	}
 }
 
@@ -121,10 +121,10 @@ void Editor :: switch_mode(const char *modename) {
 	}
 }
 void Editor :: start() {
-	printf("Starting editor...\n");
-	printf("Current mode: %s\n", active_mode_->modename_);
-	
+	printf("Starting editor...\n");	
 	while(1) {
+
+		printf("Current mode: %s\n", active_mode_->modename_);
 		try {
 			active_mode_->run();
 		}

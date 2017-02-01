@@ -49,9 +49,6 @@ class EditorRuntimeException : public runtime_error {
 public:
 	EditorRuntimeException() : runtime_error(DEFAULT_EXCEPTION_MESSAGE) { }
 	EditorRuntimeException(const char *msg) : runtime_error(msg) { }
-	const char* what() const noexcept { return message; }
-private:
-	char message[EXC_MESSAGE_LEN];
 };
 
 // Memory related exceptions
@@ -59,9 +56,14 @@ class BufferException : public EditorRuntimeException {
 public:
 	BufferException() : EditorRuntimeException(DEFAULT_EXCEPTION_MESSAGE) { }
 	BufferException(const char *msg) : EditorRuntimeException(msg) { }
-	const char* what() const noexcept { return message; }
-private:
-	char message[EXC_MESSAGE_LEN];
+
+};
+
+// IO exceptions
+class IOException : public EditorRuntimeException {
+public:
+	IOException() : EditorRuntimeException() { }
+	IOException(const char *msg) : EditorRuntimeException(msg) { }
 };
 
 /* NOTE: The below defined exception class is not an erroneous exception. Its just a trick I used to switch modes. Just
