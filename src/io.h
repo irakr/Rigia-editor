@@ -60,7 +60,7 @@ class InputHandler : public IOHandler {
 public:
 	InputHandler() : IOHandler() { }
 	char* read_stream(); //Reads a buffered stream of input characters.
-	char* read_key(); //Reads a single input key press(No buffering)
+	char read_key(); //Reads a single input key press(No buffering)
 private:
 };
 

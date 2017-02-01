@@ -36,6 +36,10 @@
 //TODO... Perhaps we can make use of ioctl() or some other similar functions to control the behaviour of the terminal.
 #include <sys/ioctl.h>
 #include "io.h"
+#include "editor.h"
+#include "exceptions.h"
+#include "file_manip.h"
+#include "ascii.h"
 
 // TODO... This is still not an optimal implementation. Need to have access to kernel space and have an internal buffer there,
 // maybe within a self written read() like system call.
@@ -56,9 +60,9 @@ char* InputHandler :: read_stream() {
 	return ptr;
 }
 
-char* InputHandler :: read_key() {
-	static char c;
+char InputHandler :: read_key() {
+	char c;
 	if(read(STDIN_FILENO, &c, 1) == 1)
-		return &c;
-	return NULL;
+		return c;
+	throw (IOException("[IOException] Failed to read_key()"));
 }
