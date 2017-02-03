@@ -1,0 +1,3 @@
+1. Crashes when you go to INPUT_MODE directly after starting the program.
+
+2. Window contents are not retained.

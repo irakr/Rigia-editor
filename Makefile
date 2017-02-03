@@ -17,16 +17,21 @@ LIBC=-lc
 LIBCPP=-lstdc++
 LIB_NCURSES=-lncurses
 
+# Macro-definitions
+DEFINES=-DAUTONEWLINE_ENABLED
+
 # Object files
-ALL_OBJS=$(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)ncurses_wrapper.o
+ALL_OBJS=$(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)ncurses_wrapper.o \
+		$(SOURCE_DIR)line_manip.o
 
 $(BIN_DIR)rig-editor: $(SOURCE_DIR)main.cc editor.o
 	-mkdir $(BIN_DIR)
 	$(CPP) $(CFLAGS) $(ALL_OBJS) $(SOURCE_DIR)main.cc -o $(BIN_DIR)rig-editor $(LIB_NCURSES)
 
-editor.o: $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)ncurses_wrapper.o
+editor.o: $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)ncurses_wrapper.o \
+		$(SOURCE_DIR)line_manip.o
 	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)ncurses_wrapper.o \
-	$(SOURCE_DIR)exceptions.o $(SOURCE_DIR)editor.cc $(LIB_NCURSES)
+	$(SOURCE_DIR)line_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)editor.cc $(LIB_NCURSES)
 	
 	mv editor.o $(SOURCE_DIR)
 
@@ -42,8 +47,12 @@ $(SOURCE_DIR)exceptions.o: $(SOURCE_DIR)exceptions.cc
 $(SOURCE_DIR)ncurses_wrapper.o: $(SOURCE_DIR)ncurses_wrapper.cc
 	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)ncurses_wrapper.cc -o $(SOURCE_DIR)ncurses_wrapper.o $(LIB_NCURSES)
 
+$(SOURCE_DIR)line_manip.o: $(SOURCE_DIR)line_manip.cc
+	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)line_manip.cc -o $(SOURCE_DIR)line_manip.o $(LIB_NCURSES)
+
+
 debug: $(SOURCE_DIR)editor.cc $(SOURCE_DIR)file_manip.cc $(SOURCE_DIR)io.cc $(SOURCE_DIR)exceptions.cc $(SOURCE_DIR)main.cc
-	$(CPP) $(CFLAGS) -g $(SOURCE_DIR)editor.cc $(SOURCE_DIR)file_manip.cc \
+	$(CPP) $(CFLAGS) -g $(SOURCE_DIR)editor.cc $(SOURCE_DIR)file_manip.cc $(SOURCE_DIR)ncurses_wrapper.cc \
 	$(SOURCE_DIR)io.cc $(SOURCE_DIR)exceptions.cc $(SOURCE_DIR)main.cc -o test_module $(LIB_NCURSES)
 	
 clean:

@@ -79,6 +79,11 @@ public:
 		strcpy(message, msg);
 		strcpy(modename_, modename);
 	}
+	ModeSwitchException(const char* msg, const char* modename, const char *args[]) {
+		strcpy(message, msg);
+		strcpy(modename_, modename);
+		//Then process arguments...TODO
+	}
 	const char* what() const noexcept { return message; }
 	const char* modename() { return modename_; }
 private:

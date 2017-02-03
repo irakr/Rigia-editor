@@ -37,6 +37,7 @@
 
 #include "io.h"
 #include "file_manip.h"
+#include "line_manip.h"
 #include "exceptions.h"
 #include "ascii.h"
 #include "ncurses_wrapper.h"
@@ -55,7 +56,10 @@ public:
 		modename_ = mode;
 		cursor_position.x = cursor_position.y = 0;
 	}
-	~ModeInterface() { modename_ = NULL; }
+	virtual ~ModeInterface() {
+		modename_ = NULL;
+		delete window;
+	}
 	
 	virtual void run() = 0;	 //Start running the current mode after setting all the parameters correctly
 	virtual void rest() = 0; //Rest and also save state of the current mode so that the new mode can start without any overlaps
@@ -67,14 +71,13 @@ public:
 	
 protected:
 	const char* modename_;
+	Buffer internal_buffer_;
 	
 	WINDOW *window; //Work window of the mode
 	
 	//All modes have control over the cursor in their own way
-	typedef struct {
-		int x, y;
-	} Coordinate;
 	Coordinate cursor_position;	// Current cursor position
+	Coordinate final_cursor_position; // The largest cursor position that the mode has gone through and which is the boundary
 };
 
 // VI mode
@@ -102,6 +105,8 @@ public:
 	void rest();
 	void init_interface();
 	void end_interface();
+	
+	void run_command(); //Runs the command stored in the internal_buffer_
 } CommandMode_;
 
 // Input mode
@@ -128,26 +133,48 @@ private:
 class Editor {
 
 public:
-	Editor() { active_mode_ = &ViMode_; } //Default
+	Editor() {
+		active_mode_ = &ViMode_; //Default
+		line_manip_ = new LineManipUnit();
+	} 
+	~Editor() {
+		delete active_mode_;
+		delete io_input_;
+		delete io_output_;
+		delete file_manip_;
+		delete line_manip_;
+	}
 	
 	void switch_mode(const char*);
 	void start();
 	void terminate();
+	
+	//Below two functions may be removed and their logic may be added to the constructor. TODO
 	void setup_io(InputHandler*, OutputHandler*);
 	void setup_filemanip(FileManipUnit*);
+	
+	// Accessors
+	ModeInterface* active_mode() { return active_mode_; }
 	InputHandler* io_input() { return io_input_; }
 	OutputHandler* io_output() { return io_output_; }
+	FileManipUnit* file_manip() { return file_manip_; }
+	LineManipUnit* line_manip() { return line_manip_; }
+	
 	int current_mode();	// Return the macro constant of the currently active mode identified by 'active_mode_'.
 	
 	//These functions uses the buffer of the io_input module.
 	//friend void ViMode :: run();
 	//friend void CommandMode :: run();
 	//friend void InputMode :: run();
+	friend class ViMode;
+	friend class CommandMode;
+	friend class InputMode;
 private:
 	ModeInterface *active_mode_;
 	InputHandler *io_input_; //Handles the input characters
 	OutputHandler *io_output_; //Handles the output characters
-	FileManipUnit *file_manip_; //Handles the file operations
+	FileManipUnit *file_manip_; //Handles file operations
+	LineManipUnit *line_manip_; //Handles line operations
 };
 
 

@@ -41,6 +41,9 @@
 #include "file_manip.h"
 #include "ascii.h"
 #include "ncurses_wrapper.h"
+#include <ctype.h>
+
+/***************** InputHandler ************************/
 
 // TODO... This is still not an optimal implementation. Need to have access to kernel space and have an internal buffer there,
 // maybe within a self written read() like system call.
@@ -64,16 +67,26 @@ int* InputHandler :: read_stream() {
 int InputHandler :: read_key(WINDOW *w) {
 	int c;
 	if((c=wgetch(w)) != EOF) {
-		buff_it(c);
+		internal_buffer_.buff_it(c);
 		return c;
 	}
-	throw (IOException("[IOException] Failed to read_key()"));
+	throw (IOException("Invalid key detected by 'InputHandler::read_key()'"));
 }
 
-void InputHandler :: buff_it(int c) {
-	if((internal_buffer_.offset == -1) || (internal_buffer_.offset == MAX_BUFF_SIZE-1)) //For initialization or renewal of buffer
-		internal_buffer_.offset = 0;
+/************ Buffer **********************/
+
+void Buffer :: buff_it(int c) {
+	if(offset == MAX_BUFF_SIZE-1) //For renewal of buffer
+		offset = 0;
 		// TODO... It may be a better idea to write to a file after the buffer gets full.
+	else
+		offset++;
 	
-	internal_buffer_.buff[internal_buffer_.offset++] = c;
+	buff[offset] = c;
+}
+
+int Buffer :: buff_out() {
+	if(offset == -1)
+		throw BufferException("Buffer underflow in 'InputHandler::buff_out()'");
+	return buff[offset--];
 }
