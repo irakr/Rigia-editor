@@ -1,9 +1,10 @@
 # Rigia-editor
 A vi like text editor developed just for fun.
 
-Written in C/C++.
+# Implementation
+1. Written in C/C++.
+2. Uses the ncurses library.
+
 
 # Current progress
- 1. Now you can switch between different modes just like 'vi'. But in order to that you have to press ENTER after entering the mode changing key.
- 	Example: To switch to input-mode:
- 			Press 'i' and then ENTER
+ 1. Now you can switch between different modes just like 'vi'.
