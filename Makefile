@@ -12,23 +12,27 @@ FLAG_ALL_DIRS=-I$(SOURCE_DIR)
 # Loader command
 LD=ld
 
-# Library linkage options
+# Libraries
 LIBC=-lc
 LIBCPP=-lstdc++
+LIB_NCURSES=-lncurses
 
 # Object files
-ALL_OBJS=$(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o
+ALL_OBJS=$(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)ncurses_wrapper.o
 
 $(BIN_DIR)rig-editor: $(SOURCE_DIR)main.cc editor.o
 	-mkdir $(BIN_DIR)
-	$(CPP) $(CFLAGS) $(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)main.cc -o $(BIN_DIR)rig-editor
+	$(CPP) $(CFLAGS) $(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o \
+	$(SOURCE_DIR)exceptions.o $(SOURCE_DIR)main.cc -o $(BIN_DIR)rig-editor $(LIB_NCURSES)
 
-editor.o: $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o
-	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)editor.cc
-	mv editor.o $(SOURCE_DIR) 
+editor.o: $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)ncurses_wrapper.o
+	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)ncurses_wrapper.o \
+	$(SOURCE_DIR)exceptions.o $(SOURCE_DIR)editor.cc $(LIB_NCURSES)
+	
+	mv editor.o $(SOURCE_DIR)
 
 $(SOURCE_DIR)io.o: $(SOURCE_DIR)io.cc
-	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)io.cc -o $(SOURCE_DIR)io.o
+	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)io.cc -o $(SOURCE_DIR)io.o $(LIB_NCURSES)
 
 $(SOURCE_DIR)file_manip.o: $(SOURCE_DIR)file_manip.cc
 	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)file_manip.cc -o $(SOURCE_DIR)file_manip.o
@@ -36,8 +40,12 @@ $(SOURCE_DIR)file_manip.o: $(SOURCE_DIR)file_manip.cc
 $(SOURCE_DIR)exceptions.o: $(SOURCE_DIR)exceptions.cc
 	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)exceptions.cc -o $(SOURCE_DIR)exceptions.o
 
+$(SOURCE_DIR)ncurses_wrapper.o: $(SOURCE_DIR)ncurses_wrapper.cc
+	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)ncurses_wrapper.cc -o $(SOURCE_DIR)ncurses_wrapper.o $(LIB_NCURSES)
+
 debug: $(SOURCE_DIR)editor.cc $(SOURCE_DIR)file_manip.cc $(SOURCE_DIR)io.cc $(SOURCE_DIR)exceptions.cc $(SOURCE_DIR)main.cc
-	$(CPP) $(CFLAGS) -g $(SOURCE_DIR)editor.cc $(SOURCE_DIR)file_manip.cc $(SOURCE_DIR)io.cc $(SOURCE_DIR)exceptions.cc $(SOURCE_DIR)main.cc -o test_module
+	$(CPP) $(CFLAGS) -g $(SOURCE_DIR)editor.cc $(SOURCE_DIR)file_manip.cc \
+	$(SOURCE_DIR)io.cc $(SOURCE_DIR)exceptions.cc $(SOURCE_DIR)main.cc -o test_module $(LIB_NCURSES)
 	
 clean:
 	-rm *.o

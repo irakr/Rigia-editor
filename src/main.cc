@@ -46,8 +46,6 @@ void init_system(int, char*[]);
 /* Main	*/
 int main(int argc, char *argv[]) {
 	
-	printf("\t\t--- Welcome to Rigia-editor ---\n");
-	
 	init_system(argc-1, argv+1);
 	
 	// Create and set-up editor

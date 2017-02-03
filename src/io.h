@@ -39,7 +39,7 @@
 #define MAX_BUFF_SIZE 65535
 // A simple struct for a buffer
 typedef struct {
-	char* buff;
+	int* buff;
 	int offset; //Position in which the next incoming character will be pushed. Buffer will be flushed when this reaches MAX_BUFF_SIZE-1.
 } Buffer;
 
@@ -47,7 +47,7 @@ typedef struct {
 class IOHandler {
 public:
 	IOHandler() {
-		internal_buffer_.buff = new char[MAX_BUFF_SIZE];
+		internal_buffer_.buff = new int[MAX_BUFF_SIZE];
 		internal_buffer_.offset = -1;
 	}
 	inline bool buffer_empty() { return (internal_buffer_.offset == -1); }
@@ -59,8 +59,9 @@ protected:
 class InputHandler : public IOHandler {
 public:
 	InputHandler() : IOHandler() { }
-	char* read_stream(); //Reads a buffered stream of input characters.
-	char read_key(); //Reads a single input key press(No buffering)
+	int* read_stream(); //Reads a buffered stream of input characters.(Use tochar() to convert into character) (Buffered)
+	int read_key(); //Reads a single input key press.(Buffered)
+	void buff_it(int); // Buffer the read character.
 private:
 };
 

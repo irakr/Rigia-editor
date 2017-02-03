@@ -29,22 +29,23 @@
  * io.cc
  */
  
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <unistd.h>
+//#include <fcntl.h>
 //TODO... Perhaps we can make use of ioctl() or some other similar functions to control the behaviour of the terminal.
-#include <sys/ioctl.h>
+//#include <sys/ioctl.h>
 #include "io.h"
 #include "editor.h"
 #include "exceptions.h"
 #include "file_manip.h"
 #include "ascii.h"
+#include "ncurses_wrapper.h"
 
 // TODO... This is still not an optimal implementation. Need to have access to kernel space and have an internal buffer there,
 // maybe within a self written read() like system call.
-char* InputHandler :: read_stream() {
-	char *ptr;
+int* InputHandler :: read_stream() {
+	int *ptr;
 	
 	//TODO...XXX Still pending
 	if((internal_buffer_.offset == -1) || (internal_buffer_.offset == MAX_BUFF_SIZE-1)) //For initialization or renewal of buffer
@@ -60,9 +61,19 @@ char* InputHandler :: read_stream() {
 	return ptr;
 }
 
-char InputHandler :: read_key() {
-	char c;
-	if(read(STDIN_FILENO, &c, 1) == 1)
+int InputHandler :: read_key() {
+	int c;
+	if((c=getch()) != EOF) {
+		buff_it(c);
 		return c;
+	}
 	throw (IOException("[IOException] Failed to read_key()"));
+}
+
+void InputHandler :: buff_it(int c) {
+	if((internal_buffer_.offset == -1) || (internal_buffer_.offset == MAX_BUFF_SIZE-1)) //For initialization or renewal of buffer
+		internal_buffer_.offset = 0;
+		// TODO... It may be a better idea to write to a file after the buffer gets full.
+	
+	internal_buffer_.buff[internal_buffer_.offset++] = c;
 }

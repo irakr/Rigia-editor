@@ -40,7 +40,7 @@
 #include "exceptions.h"
 #include "ascii.h"
 
-// User interface modes
+// User interface modes. These macros are used by the current_mode() function as return type.
 #define 	COMMAND_MODE	1
 #define 	INPUT_MODE		2
 #define 	VI_MODE			0
@@ -50,17 +50,28 @@
 class ModeInterface {
 
 public:
-	ModeInterface(const char* mode) { modename_ = mode;	}
+	ModeInterface(const char* mode) {
+		modename_ = mode;
+		cursor_position.x = cursor_position.y = 0;
+	}
 	~ModeInterface() { modename_ = NULL; }
 	
 	virtual void run() = 0;	 //Start running the current mode after setting all the parameters correctly
 	virtual void rest() = 0; //Rest and also save state of the current mode so that the new mode can start without any overlaps
+	virtual void init_interface() = 0;	//Initialize interface type. (The 'ncurses' library is used here)
+	virtual void end_interface() = 0;	//Ends the interface type. ('')
 	
 	//Since the Editor class will control all operations externally it need access to all members
 	friend class Editor;											
 	
 protected:
 	const char* modename_;
+	
+	//All modes have control over the cursor in their own way
+	typedef struct {
+		int x, y;
+	} Coordinate;
+	Coordinate cursor_position;	// Current cursor position
 };
 
 // VI mode
@@ -71,7 +82,10 @@ public:
 	~ViMode() { }
 	void run();
 	void rest();
+	void init_interface();
+	void end_interface();
 	
+	friend class InputMode;
 } ViMode_;
 
 // Command mode
@@ -83,6 +97,8 @@ public:
 	
 	void run();
 	void rest();
+	void init_interface();
+	void end_interface();
 } CommandMode_;
 
 // Input mode
@@ -94,6 +110,12 @@ public:
 	
 	void run();
 	void rest();
+	void init_interface();
+	void end_interface();
+	
+	//Since ViMode should be able to access and perhaps modify the cursor_position of InputMode.
+	//(You can investigate it on 'vi' editor.)
+	friend class ViMode;
 //XXX... Maybe a buffer will be needed for this class object
 private:
 	//Buffer buff;
@@ -107,10 +129,17 @@ public:
 	
 	void switch_mode(const char*);
 	void start();
+	void terminate();
 	void setup_io(InputHandler*, OutputHandler*);
 	void setup_filemanip(FileManipUnit*);
 	InputHandler* io_input() { return io_input_; }
 	OutputHandler* io_output() { return io_output_; }
+	int current_mode();	// Return the macro constant of the currently active mode identified by 'active_mode_'.
+	
+	//These functions uses the buffer of the io_input module.
+	//friend void ViMode :: run();
+	//friend void CommandMode :: run();
+	//friend void InputMode :: run();
 private:
 	ModeInterface *active_mode_;
 	InputHandler *io_input_; //Handles the input characters
