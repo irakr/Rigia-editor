@@ -36,6 +36,8 @@
 #ifndef RIG_IO_H_
 #define RIG_IO_H_
 
+#include "ncurses_wrapper.h"
+
 #define MAX_BUFF_SIZE 65535
 // A simple struct for a buffer
 typedef struct {
@@ -60,7 +62,7 @@ class InputHandler : public IOHandler {
 public:
 	InputHandler() : IOHandler() { }
 	int* read_stream(); //Reads a buffered stream of input characters.(Use tochar() to convert into character) (Buffered)
-	int read_key(); //Reads a single input key press.(Buffered)
+	int read_key(WINDOW*); //Reads a single input key press.(Buffered)
 	void buff_it(int); // Buffer the read character.
 private:
 };

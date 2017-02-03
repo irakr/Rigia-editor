@@ -37,7 +37,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "ncurses_wrapper.h"
 #include "editor.h"
 
 extern Editor editor;
@@ -49,12 +48,14 @@ void ViMode :: init_interface() {
 	cbreak();
 	keypad(stdscr, TRUE);
 	noecho();
-	move(InputMode_.cursor_position.y, InputMode_.cursor_position.x);
+	window = create_newwin(LINES, COLS, 0, 0);
+	wmove(window, InputMode_.cursor_position.y, InputMode_.cursor_position.x);
 	refresh();
 }
 
 void ViMode :: end_interface() {
-	endwin();
+	//destroy_win(window);
+	//endwin();
 }
 
 void ViMode :: rest() {
@@ -63,12 +64,12 @@ void ViMode :: rest() {
 
 // Execution of the mode
 void ViMode :: run() {
-	move(2, 0);
-	printw("Current mode: %s", modename_);
-	refresh();
+	//move(2, 0);
+	//printw("Current mode: %s", modename_);
+	//refresh();
 	init_interface();
 	while(1) {
-		char c = editor.io_input()->read_key();
+		char c = editor.io_input()->read_key(window);
 		if(c == ESC) {
 			end_interface();
 			throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
@@ -93,12 +94,15 @@ void CommandMode :: init_interface() {
 	cbreak();
 	keypad(stdscr, TRUE);
 	echo();
-	move(20, 0);
+	window = create_newwin(1, COLS, LINES-1, 0);
+	wmove(window, 0, 0);
 	refresh();
 }
 
 void CommandMode :: end_interface() {
-	endwin();
+	//destroy_win(window);
+	//endwin();
+	cursor_position.x = cursor_position.y = 0;
 }
 
 void CommandMode :: rest() {
@@ -107,12 +111,12 @@ void CommandMode :: rest() {
 
 // Execution of the mode
 void CommandMode :: run() {
-	move(2, 0);
-	printw("Current mode: %s", modename_);
-	refresh();
+	//move(2, 0);
+	//printw("Current mode: %s", modename_);
+	//refresh();
 	init_interface();
 	while(1) {
-		char c = editor.io_input()->read_key();
+		char c = editor.io_input()->read_key(window);
 		if(c == ESC) {
 			end_interface();
 			throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
@@ -129,12 +133,14 @@ void InputMode :: init_interface() {
 	//raw();
 	keypad(stdscr, TRUE);
 	echo();
-	move(ViMode_.cursor_position.y, ViMode_.cursor_position.x);
+	window = create_newwin(LINES, COLS, 0, 0);
+	wmove(window, ViMode_.cursor_position.y, ViMode_.cursor_position.x);
 	refresh();
 }
 
 void InputMode :: end_interface() {
-	endwin();
+	//destroy_win(window);
+	//endwin();
 }
 
 void InputMode :: rest() {
@@ -143,11 +149,11 @@ void InputMode :: rest() {
 
 // Execution of the mode
 void InputMode :: run() {
-	move(2, 0);
-	printw("Current mode: %s", modename_);
+	//move(2, 0);
+	//printw("Current mode: %s", modename_);
 	init_interface();
 	while(1) {
-		char c = editor.io_input()->read_key();
+		char c = editor.io_input()->read_key(window);
 		
 		//Detect control characters for special operations.
 		switch (c) {
@@ -199,9 +205,9 @@ void Editor :: switch_mode(const char *modename) {
 
 void Editor :: start() {
 	initscr();
-	move(1, 10);
-	printf("--- Welcome to Rigia-editor ---");
-	refresh();
+	//move(1, 10);
+	//printw("--- Welcome to Rigia-editor ---");
+	//refresh();
 	while(1) {
 		
 		try {

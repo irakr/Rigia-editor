@@ -22,8 +22,7 @@ ALL_OBJS=$(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOU
 
 $(BIN_DIR)rig-editor: $(SOURCE_DIR)main.cc editor.o
 	-mkdir $(BIN_DIR)
-	$(CPP) $(CFLAGS) $(SOURCE_DIR)editor.o $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o \
-	$(SOURCE_DIR)exceptions.o $(SOURCE_DIR)main.cc -o $(BIN_DIR)rig-editor $(LIB_NCURSES)
+	$(CPP) $(CFLAGS) $(ALL_OBJS) $(SOURCE_DIR)main.cc -o $(BIN_DIR)rig-editor $(LIB_NCURSES)
 
 editor.o: $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)exceptions.o $(SOURCE_DIR)ncurses_wrapper.o
 	$(CPP) $(CFLAGS) -c $(SOURCE_DIR)editor.cc $(SOURCE_DIR)io.o $(SOURCE_DIR)file_manip.o $(SOURCE_DIR)ncurses_wrapper.o \

@@ -39,6 +39,7 @@
 #include "file_manip.h"
 #include "exceptions.h"
 #include "ascii.h"
+#include "ncurses_wrapper.h"
 
 // User interface modes. These macros are used by the current_mode() function as return type.
 #define 	COMMAND_MODE	1
@@ -66,6 +67,8 @@ public:
 	
 protected:
 	const char* modename_;
+	
+	WINDOW *window; //Work window of the mode
 	
 	//All modes have control over the cursor in their own way
 	typedef struct {

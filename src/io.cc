@@ -61,9 +61,9 @@ int* InputHandler :: read_stream() {
 	return ptr;
 }
 
-int InputHandler :: read_key() {
+int InputHandler :: read_key(WINDOW *w) {
 	int c;
-	if((c=getch()) != EOF) {
+	if((c=wgetch(w)) != EOF) {
 		buff_it(c);
 		return c;
 	}
