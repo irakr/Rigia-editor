@@ -43,8 +43,8 @@
 struct Buffer {
 	int buff[MAX_BUFF_SIZE];
 	int offset; //Position in which the next incoming character will be pushed. Buffer will be flushed when this reaches MAX_BUFF_SIZE-1.
-	inline void clear() { offset = -1; }
-	void buff_it(int);
+	inline void reset() { offset = -1; }
+	void buff_in(int);
 	int buff_out();
 };
 

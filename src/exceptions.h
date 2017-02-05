@@ -36,9 +36,9 @@
 
 #define EXC_MESSAGE_LEN 256
 
-#include <string.h>
 #include <exception>
 #include <stdexcept>
+#include <string.h>
 
 #define DEFAULT_EXCEPTION_MESSAGE "Rigia-editor exception generated"
 
@@ -71,6 +71,7 @@ public:
  * Anyway this might only be a temporary implementation but lets see.
  */
  
+
 // Exception for changing mode
 class ModeSwitchException : public exception {
 public:

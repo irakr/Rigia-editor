@@ -17,10 +17,13 @@ struct Line {
 //TODO
 class LineManipUnit {
 public:
-	LineManipUnit() { line = new Line*; lines = 0; }
+	LineManipUnit() { line = new Line*; nlines = 0; }
+	~LineManipUnit() { delete line; }
+	
 private:
 	Line **line;	//Line record of the editor
-	int lines;		//Number of lines currently existing in the editor
+	int nlines;		//Number of lines currently existing in the editor
+	int current_line; //Line in which the cursor currently lies
 };
 
 #endif

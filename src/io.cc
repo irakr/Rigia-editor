@@ -41,6 +41,7 @@
 #include "file_manip.h"
 #include "ascii.h"
 #include "ncurses_wrapper.h"
+#include <unistd.h>
 #include <ctype.h>
 
 /***************** InputHandler ************************/
@@ -66,8 +67,8 @@ int* InputHandler :: read_stream() {
 
 int InputHandler :: read_key(WINDOW *w) {
 	int c;
-	if((c=wgetch(w)) != EOF) {
-		internal_buffer_.buff_it(c);
+	if((c=wgetch(w)) != ERR) {
+		internal_buffer_.buff_in(c);
 		return c;
 	}
 	throw (IOException("Invalid key detected by 'InputHandler::read_key()'"));
@@ -75,7 +76,7 @@ int InputHandler :: read_key(WINDOW *w) {
 
 /************ Buffer **********************/
 
-void Buffer :: buff_it(int c) {
+void Buffer :: buff_in(int c) {
 	if(offset == MAX_BUFF_SIZE-1) //For renewal of buffer
 		offset = 0;
 		// TODO... It may be a better idea to write to a file after the buffer gets full.

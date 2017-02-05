@@ -55,6 +55,8 @@ public:
 	ModeInterface(const char* mode) {
 		modename_ = mode;
 		cursor_position.x = cursor_position.y = 0;
+		final_cursor_position.x = final_cursor_position.y = 0;
+		window = NULL;
 	}
 	virtual ~ModeInterface() {
 		modename_ = NULL;
@@ -106,7 +108,7 @@ public:
 	void init_interface();
 	void end_interface();
 	
-	void run_command(); //Runs the command stored in the internal_buffer_
+	void exec_command(); //Runs the command stored in the internal_buffer_
 } CommandMode_;
 
 // Input mode
@@ -125,7 +127,7 @@ public:
 	//(You can investigate it on 'vi' editor.)
 	friend class ViMode;
 //XXX... Maybe a buffer will be needed for this class object
-private:
+//private:
 	//Buffer buff;
 } InputMode_;
 

@@ -51,20 +51,22 @@ extern Editor editor;
 /********************************************* VI Mode ***************************************/
 
 void ViMode :: init_interface() {
-	//initscr();
-	cbreak();
-	//keypad(stdscr, TRUE);
-	noecho();
-	window = newwin(LINES, COLS, 0, 0);
-	keypad(window, TRUE);
+	noecho(); //Echoing is done in a controlled manner in all modes
+	
+	if(!window) {
+		window = newwin(LINES-1, COLS, 0, 0);
+		keypad(window, TRUE);
+	}
 	
 	//Take the cursor position the inputmode
-	cursor_position.x = InputMode_.cursor_position.x;
-	cursor_position.y = InputMode_.cursor_position.y;
+	//cursor_position.x = InputMode_.cursor_position.x;
+	//cursor_position.y = InputMode_.cursor_position.y;
+	cursor_position = InputMode_.cursor_position;
 	wmove(window, cursor_position.y, cursor_position.x);
 	wrefresh(window);
+	final_cursor_position = InputMode_.final_cursor_position;
 }
-
+//
 void ViMode :: end_interface() {
 	//destroy_win(window);
 	//endwin();
@@ -76,23 +78,58 @@ void ViMode :: rest() {
 
 // Execution of the mode
 void ViMode :: run() {
-	//move(2, 0);
-	//printw("Current mode: %s", modename_);
-	//refresh();
 	init_interface();
 	while(1) {
-		int c = editor.io_input()->read_key(window);
+		int c;
+		try {
+			c = editor.io_input()->read_key(window);
+		}
+		catch(IOException e) {
+			//mvwprintw(window, COLS/2, LINES/2, e.what());
+			editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, e.what());
+			continue;
+		}
 		
 		switch (c) {
 			case ESC:
 				end_interface();
+				//editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, "Attempted switch to VI_MODE\n");
 				throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 			case ':':
 				end_interface();
+				//editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, "Attempted switch to COMMAND_MODE\n");
 				throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "command-mode"));
 			case 'i':
 				end_interface();
+				//editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, "Attempted switch to INPUT_MODE\n");
 				throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "input-mode"));
+			case KEY_ENTER:
+				cursor_position.y++;
+				cursor_position.x = 0;
+				final_cursor_position = cursor_position;
+				while(wmove(window, cursor_position.y, cursor_position.x) == ERR) {
+					//Then probably resize the window...TODO
+					;
+				}
+				break;
+			
+			case KEY_LEFT:
+				if(wmove(window, cursor_position.y, cursor_position.x-1) != ERR)
+					cursor_position.x--;
+				break;
+			case KEY_RIGHT: //Block-able by final_cursor_position
+				cursor_position.x = (cursor_position.x < final_cursor_position.x) ? (cursor_position.x+1) : (cursor_position.x) ;
+				wmove(window, cursor_position.y, cursor_position.x);
+				break;
+			case KEY_UP:
+				if(wmove(window, cursor_position.y-1, cursor_position.x) != ERR)
+					cursor_position.y--;
+				break;
+			case KEY_DOWN: //Block-able by final_cursor_position
+				cursor_position.y = (cursor_position.y < final_cursor_position.y) ? (cursor_position.y+1) : (cursor_position.y) ;
+				wmove(window, cursor_position.y, cursor_position.x);
+				break;
+			
 		}
 		
 	}
@@ -103,20 +140,21 @@ void ViMode :: run() {
 /*************************************** Command Mode **************************************/
 
 void CommandMode :: init_interface() {
-	//initscr();
-	cbreak();
-	keypad(stdscr, TRUE);
-	echo();
-	window = newwin(1, COLS, LINES-1, 0);
-	keypad(window, TRUE);
-	//wmove(window, 0, 0);
-	wprintw(window, "%c", editor.io_input_->buffer()->buff_out());
+	//noecho();
+	
+	if(!window) {
+		window = newwin(1, COLS, LINES-1, 0);
+		keypad(window, TRUE);
+	}
+	//wprintw(window, "%c", editor.io_input_->buffer()->buff_out());
+	mvwaddch(window, 0, 0, ':');
 	wrefresh(window);
 }
 
 void CommandMode :: end_interface() {
 	//destroy_win(window);
 	//endwin();
+	delwin(window);
 	cursor_position.x = cursor_position.y = 0;
 }
 
@@ -131,35 +169,43 @@ void CommandMode :: run() {
 	//refresh();
 	init_interface();
 	while(1) {
-		int c = editor.io_input()->read_key(window);
+		int c;
+		try {
+			c = editor.io_input()->read_key(window);
+		}
+		catch(IOException e) {
+			//editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, e.what());
+			continue;
+		}
 		switch (c) {
 			case ESC:
 				end_interface();
+				//editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, "Attempted switch to VI_MODE\n");
 				throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 			
 			case KEY_ENTER:
-				run_command();
+				exec_command();
 				break;
+			
+			default:
+				cursor_position.x++;
+				mvwaddch(window, cursor_position.y, cursor_position.x, c);
 		}
 		
-		cursor_position.x++;
 	}
 }
 
-void CommandMode :: run_command() {
+void CommandMode :: exec_command() {
 	//TODO...
 }
 
 /*************************************** Input Mode ****************************************/
 
 void InputMode :: init_interface() {
-	//initscr();
-	cbreak();
-	//raw();
-	keypad(stdscr, TRUE);
-	echo();
-	//window = create_newwin(LINES, COLS, 0, 0);
-	window = ViMode_.window;
+	//noecho();
+	if(!window)
+		window = ViMode_.window;
+	cursor_position = ViMode_.cursor_position;
 	wmove(window, ViMode_.cursor_position.y, ViMode_.cursor_position.x);
 	wrefresh(window);
 }
@@ -179,12 +225,27 @@ void InputMode :: run() {
 	//printw("Current mode: %s", modename_);
 	int c;
 	init_interface();
-	while((c = editor.io_input()->read_key(window)) != ESC) {
+	
+	while(1) {
 		
-		internal_buffer_.buff_it(c);
+		try {
+			c = editor.io_input()->read_key(window);
+		}
+		catch(IOException e) {
+			//editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, e.what());
+			continue;
+		}
+		
+		internal_buffer_.buff_in(c); //Will later be buff_out() if control character
 		
 		//Different operations for different characters...
 		switch (c) {
+			case ESC:			
+				internal_buffer_.buff_out();	//Remove the ESC from buffer coz we dont want it as a text.
+				//editor.file_manip()->log(editor.file_manip()->get_fileinfo(1)->name, modename_, "Attempted switch to VI_MODE\n");
+				//end_interface();
+				throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
+				
 			case KEY_ENTER:
 				cursor_position.y++;
 				cursor_position.x = 0;
@@ -213,7 +274,8 @@ void InputMode :: run() {
 				break;
 				
 			default:
-				//Otherwise simply keep on buffering charaters read from keyboard
+				//Otherwise simply echo and buffer charater read from keyboard
+				mvwaddch(window, cursor_position.y, cursor_position.x, c);
 				#ifdef AUTONEWLINE_ENABLED
 				if(cursor_position.x == COLS) {
 					cursor_position.x = 0;
@@ -226,10 +288,6 @@ void InputMode :: run() {
 		}
 		wrefresh(window);
 	}//while()
-	
-	internal_buffer_.buff_out();	//Remove the ESC from buffer coz we dont want it as a text.
-	//end_interface();
-	throw (ModeSwitchException("[ModeSwitchException] Request for mode switch", "vi-mode"));
 
 }
 
@@ -267,6 +325,9 @@ void Editor :: switch_mode(const char *modename) {
 void Editor :: start() {
 	
 	initscr();
+	//flushinp();
+	cbreak;
+	keypad(stdscr, TRUE);
 	while(1) {
 		
 		try {

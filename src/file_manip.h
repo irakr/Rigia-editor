@@ -37,9 +37,6 @@
 #ifndef RIG_FILE_MANIP_H_
 #define RIG_FILE_MANIP_H_
 
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
 
 #define FILENAME_LEN_MAX 128
 // A linked list node to store info of every opened file
@@ -53,12 +50,19 @@ typedef struct _FileList_ {
 class FileManipUnit {
 public:
 	//FileManipUnit() : write_fd_(STDOUT_FILENO), read_fd_(STDIN_FILENO), write_filename_("stdout"), read_filename_("stdin") { }
-	FileManipUnit() { }
+	FileManipUnit();
+	~FileManipUnit();
 	//FileManipUnit(int fd, char *name);
 	
 	void init_active_files(int, char*[]);
+	
+	FileList *get_fileinfo(int);
+	
+	int log(const char*, const char*, const char*); //Perform logging events
+	
 private:
 	FileList *active_files_; //List of opened filenames. Implemented as a linked list.
+	FileList log_file_;
 };
 
 #endif

@@ -29,8 +29,24 @@
  * file_manip.cc
  */
  
-#include "file_manip.h"
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
 #include <string.h>
+#include "file_manip.h"
+#include "exceptions.h"
+
+FileManipUnit :: FileManipUnit() {
+	if((log_file_.fd = open("logs", O_CREAT | O_RDWR, S_IRWXU | S_IRUSR)) == -1) {
+		throw IOException("[IOException] Could not open log file");
+	}
+	write(log_file_.fd, "LOG FILE\n", 9);
+}
+
+FileManipUnit :: ~FileManipUnit() {
+	close(log_file_.fd);
+}
 
 void FileManipUnit :: init_active_files(int count, char *file_names[]) {
 	if(count == 0)
@@ -48,4 +64,31 @@ void FileManipUnit :: init_active_files(int count, char *file_names[]) {
 	ptr->next = NULL;
 }
 
+//Returns the pointer to the nth active_files_ node
+FileList* FileManipUnit :: get_fileinfo(int n) {
+	//TODO...Implement it fully later
+	return active_files_;
+}
 
+int FileManipUnit :: log(const char *filename, const char *modename, const char *errmsg) {
+	
+	if(!filename || !modename || !errmsg)
+		return -1;
+	char header[200] = "-------------------------------------------------------------\n";
+	char *text = new char[strlen(filename) + strlen(modename) + strlen(errmsg) + 1024];
+	if(!text)
+		return -1;
+	
+	struct timespec tp;
+	clock_gettime(CLOCK_REALTIME, &tp);
+	strcat(strcat(header, ctime(&tp.tv_sec)), "\n");
+	write(log_file_.fd, header, strlen(header));
+	
+	strcat(strcat(strcpy(text, "Filename: "), filename), "\n");
+	strcat(strcat(strcat(text, "In mode: "), modename), "\n");
+	strcat(strcat(strcat(text, "Error: "), errmsg), "\n");
+	write(log_file_.fd, text, strlen(text));
+	
+	delete text;
+	return 0;
+}
